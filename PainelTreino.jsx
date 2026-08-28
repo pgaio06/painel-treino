@@ -196,19 +196,26 @@ const RACES = [
     confirmed: true,
   },
   {
+    date: "2026-09-26",
+    name: "Corrida BeActive Guimarães",
+    distance: "5 km",
+    role: "Teste de forma",
+    confirmed: true,
+  },
+  {
+    date: "2026-10-04",
+    name: "Corrida IPO Porto",
+    distance: "5 km",
+    role: "Teste de forma",
+    confirmed: true,
+  },
+  {
     date: "2026-11-08",
     name: "Maratona do Porto",
     distance: "10 km",
     role: "Prova principal · alvo sub-40",
     confirmed: true,
     primary: true,
-  },
-  {
-    date: "2026-11-30",
-    name: "Marcor — tirocínio",
-    distance: "8 km fardado",
-    role: "Data por confirmar",
-    confirmed: false,
   },
 ];
 
@@ -603,7 +610,7 @@ export default function PainelTreino() {
           })}
         </Card>
 
-        <Card title="Próximas provas" icon={Flag}>
+        <Card title="Calendário de provas" icon={Flag}>
           {RACES.map((r) => (
             <div className="race" key={r.name}>
               <div>
