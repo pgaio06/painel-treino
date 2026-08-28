@@ -11,7 +11,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { Upload, Plus, X, Check, Flag, Activity, Dumbbell } from "lucide-react";
+import { Upload, Plus, X, Check, Flag, Activity } from "lucide-react";
 
 // ---------------------------------------------------------------------------
 // Design tokens
@@ -125,6 +125,13 @@ const SEED_RUNS = [
     avgHr: 143,
     note: "+152 m de subida",
   },
+  {
+    date: "2026-08-28",
+    distanceKm: 2.61,
+    paceStr: "6:19",
+    avgHr: 144,
+    note: "Corrida curta, cortada por sono fraco — decisão certa",
+  },
 ];
 
 // Plano da semana. É aqui que passa a viver o treino, em vez do calendário.
@@ -136,15 +143,6 @@ const WEEK = {
       dow: "Seg",
       date: "2026-08-24",
       run: "Corrida fácil 4–5 km · Z2",
-      lift: "Push — peito, ombros, tríceps",
-      exercises: [
-        "Flexões 4 × até perto da falha",
-        "Floor press 3 × 10-12",
-        "Shoulder press 3 × 8-10",
-        "Elevação lateral 3 × 12-15",
-        "Extensão tríceps 3 × 10-12",
-        "Prancha 3 × 40 s",
-      ],
       done: true,
     },
     { dow: "Ter", date: "2026-08-25", rest: true },
@@ -152,14 +150,6 @@ const WEEK = {
       dow: "Qua",
       date: "2026-08-26",
       run: "Corrida fácil 4–5 km · Z2",
-      lift: "Braços e ombros — extra curto",
-      exercises: [
-        "Rosca bíceps 3 × 10-12",
-        "Rosca martelo 3 × 10-12",
-        "Extensão tríceps testa 3 × 10-12",
-        "Elevação lateral 3 × 12-15",
-        "Elevação frontal 3 × 12",
-      ],
       done: false,
     },
     { dow: "Qui", date: "2026-08-27", rest: true },
@@ -167,15 +157,7 @@ const WEEK = {
       dow: "Sex",
       date: "2026-08-28",
       run: "Corrida fácil 4–5 km · Z2",
-      lift: "Pull — costas, bíceps",
-      exercises: [
-        "Dominadas 4 × 6-10",
-        "Remo curvado 4 × 10-12",
-        "Reverse fly 3 × 12-15",
-        "Rosca bíceps 3 × 10-12",
-        "Rosca martelo 3 × 10-12",
-      ],
-      done: false,
+      done: true,
     },
     {
       dow: "Sáb",
@@ -256,7 +238,6 @@ export default function PainelTreino() {
   ensureFonts();
 
   const [runs, setRuns] = useState(SEED_RUNS);
-  const [openDay, setOpenDay] = useState(null);
   const [error, setError] = useState(null);
   const [manualOpen, setManualOpen] = useState(false);
   const [manual, setManual] = useState({
@@ -455,28 +436,17 @@ export default function PainelTreino() {
           display: grid; grid-template-columns: 52px 1fr auto; gap: 14px;
           align-items: start; width: 100%; text-align: left;
           padding: 14px 0; border: 0; border-top: 1px solid #1E2731;
-          background: none; color: inherit; font: inherit; cursor: pointer;
+          background: none; color: inherit; font: inherit;
         }
         .day:first-of-type { border-top: 0; }
-        .day:disabled { cursor: default; opacity: .4; }
         .day-dow { font-family: 'Space Mono', monospace; font-size: 12px; color: #6B7684; }
         .day-dow b { display: block; color: #E8EDF2; font-size: 16px; margin-top: 2px; }
         .day-run { font-size: 14px; font-weight: 600; }
-        .day-lift {
-          font-size: 12.5px; color: #9AA5B1; margin-top: 4px;
-          display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
-        }
         .day.today { box-shadow: inset 2px 0 0 #35D9C4; padding-left: 12px; }
         .pill {
           font-family: 'Space Mono', monospace; font-size: 10px;
           padding: 3px 8px; border: 1px solid currentColor; white-space: nowrap;
         }
-        .ex { list-style: none; padding: 6px 0 12px 66px; margin: 0; }
-        .ex li {
-          font-size: 12.5px; color: #9AA5B1; padding: 4px 0;
-          font-family: 'Space Mono', monospace;
-        }
-        .ex li::before { content: "·"; color: #35D9C4; margin-right: 8px; }
 
         .race {
           display: flex; align-items: center; justify-content: space-between;
@@ -525,7 +495,6 @@ export default function PainelTreino() {
         @media (max-width: 560px) {
           .day { grid-template-columns: 46px 1fr; }
           .day .pill { grid-column: 2; justify-self: start; margin-top: 8px; }
-          .ex { padding-left: 60px; }
         }
       `}</style>
 
@@ -560,50 +529,28 @@ export default function PainelTreino() {
         >
           {WEEK.days.map((d) => {
             const isToday = d.date === todayIso;
-            const open = openDay === d.date;
             return (
-              <div key={d.date}>
-                <button
-                  className={`day${isToday ? " today" : ""}`}
-                  onClick={() => !d.rest && setOpenDay(open ? null : d.date)}
-                  disabled={!!d.rest}
-                  aria-expanded={d.exercises ? open : undefined}
-                >
-                  <span className="day-dow">
-                    {d.dow}
-                    <b>{new Date(d.date).getDate()}</b>
+              <div
+                key={d.date}
+                className={`day${isToday ? " today" : ""}`}
+                style={d.rest ? { opacity: 0.4 } : undefined}
+              >
+                <span className="day-dow">
+                  {d.dow}
+                  <b>{new Date(d.date).getDate()}</b>
+                </span>
+                <span>
+                  <span className="day-run">{d.rest ? "Descanso" : d.run}</span>
+                </span>
+                {!d.rest && (
+                  <span
+                    className="pill"
+                    style={{
+                      color: d.done ? "#4AD9B8" : isToday ? "#35D9C4" : "#3A4450",
+                    }}
+                  >
+                    {d.done ? "FEITO" : isToday ? "HOJE" : "POR FAZER"}
                   </span>
-                  <span>
-                    <span className="day-run">{d.rest ? "Descanso" : d.run}</span>
-                    {d.lift && (
-                      <span className="day-lift">
-                        <Dumbbell size={12} color="#6B7684" />
-                        {d.lift}
-                        {d.exercises && (
-                          <span style={{ color: "#3A4450" }}>
-                            {open ? "· fechar" : "· ver exercícios"}
-                          </span>
-                        )}
-                      </span>
-                    )}
-                  </span>
-                  {!d.rest && (
-                    <span
-                      className="pill"
-                      style={{
-                        color: d.done ? "#4AD9B8" : isToday ? "#35D9C4" : "#3A4450",
-                      }}
-                    >
-                      {d.done ? "FEITO" : isToday ? "HOJE" : "POR FAZER"}
-                    </span>
-                  )}
-                </button>
-                {open && d.exercises && (
-                  <ul className="ex">
-                    {d.exercises.map((e) => (
-                      <li key={e}>{e}</li>
-                    ))}
-                  </ul>
                 )}
               </div>
             );
